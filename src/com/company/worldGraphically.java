@@ -60,6 +60,7 @@ public class worldGraphically extends Frame implements KeyListener {
         g.drawLine(500,0,500,750);
         g.drawString(("a: " + roundTo(a)  + "\nb: " + roundTo(b) + "\nc: " + roundTo(c)), 10,10);
         g.drawString(("y = " + roundTo(a) + "*x^2 + " + roundTo(b) + "*x + " + roundTo(c)), 10, 30);
+        g.drawString(("Min: " + findMinQLine(a, b, c)), 10, 50);
         canvas.getBufferStrategy().show();
         g.dispose();
     }
@@ -77,6 +78,33 @@ public class worldGraphically extends Frame implements KeyListener {
                 }
             }
         }
+    }
+    public double findMinQLine(float a, float b, float c){
+        double search = 10;
+        double place = 10;
+        double small = 1000000000;
+        for (int i = 0; i < 500; i++) {
+            double t1 = a * Math.pow((place+search), 2) + b * (place+search) + c;
+            double t2 = a * Math.pow((place-search), 2) + b * (place-search) + c;
+            if (t1 > small && t2 > small) {
+                search = search/2;
+            }
+            else if(t1 > t2){
+                place = place - search;
+                small = t2;
+            }
+            else if(t1 == t2){
+                return(small);
+            }
+            else{
+                place = place + search;
+                small = t1;
+            }
+        }
+        if(abs(small) < 0.001){
+            return(0);
+        }
+        return(small);
     }
     @Override
     public void keyTyped(KeyEvent e) {
