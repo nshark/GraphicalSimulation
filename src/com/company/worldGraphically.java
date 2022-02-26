@@ -2,19 +2,23 @@ package com.company;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
+import java.awt.event.*;
 
 import java.util.Objects;
 
-import static java.lang.Math.abs;
+import static java.lang.Math.*;
 
-public class worldGraphically extends Frame implements KeyListener {
+public class worldGraphically extends Frame implements KeyListener, MouseListener, MouseMotionListener {
     public JPanel panel;
     public Canvas canvas;
+    public int pmx = 10000;
+    public int pmy = 10000;
     public float c = 3;
+    public double scale = 10;
     public float a = 1;
     public float b = 2;
+    private float Mx = 0;
+    private float My = 0;
     public int width = 1000;
     public int height = 750;
     worldGraphically(){
@@ -37,6 +41,8 @@ public class worldGraphically extends Frame implements KeyListener {
         canvas.setIgnoreRepaint(true);
         canvas.createBufferStrategy(2);
         canvas.addKeyListener(this);
+        canvas.addMouseListener(this);
+        canvas.addMouseMotionListener(this);
         setVisible(true);
         setResizable(false);
     }
@@ -47,39 +53,45 @@ public class worldGraphically extends Frame implements KeyListener {
             this.render();
         }
     }
-    private float roundTo(float p){
-        float i = Math.round(p*10);
-        return i/10;
+    private float roundTo(float p, int n){
+        float i = Math.round(p*(pow(10, n)));
+        return (float) (i/Math.pow(10, n));
     }
     public void render(){
         Graphics2D g = (Graphics2D) canvas.getBufferStrategy().getDrawGraphics().create();
         g.clearRect(0,0,width,height);
         g.setColor(Color.black);
         drawQLine(g, a, b, c);
-        g.drawLine(0,375,1000,375);
-        g.drawLine(500,0,500,750);
-        g.drawString(("a: " + roundTo(a)  + "\nb: " + roundTo(b) + "\nc: " + roundTo(c)), 10,10);
-        g.drawString(("y = " + roundTo(a) + "*x^2 + " + roundTo(b) + "*x + " + roundTo(c)), 10, 30);
-        g.drawString(("Min: " + findMinQLine(a, b, c)), 10, 50);
+        if(!(scale*My + 375 < 0 || scale*My + 375 > 750)) {
+            g.drawLine(0, (int) (375 + (scale * My)), 1000, (int) (375 + (scale * My)));
+        }
+        if (!(scale*Mx+500 < 0 || scale*Mx + 500 > 1000)) {
+            g.drawLine((int) (500 + (scale * Mx)), 0, (int) (500 + (scale * Mx)), 750);
+        }
+        g.drawString(("a: " + roundTo(a,1)  + "\nb: " + roundTo(b,1) + "\nc: " + roundTo(c,1)), 10,10);
+        g.drawString(("y = " + roundTo(a,1) + "*x^2 + " + roundTo(b,1) + "*x + " + roundTo(c,1)), 10, 30);
+        if(findMinQLine(a, b, c) == -1000000){
+            g.drawString(("Min: Negative Infinity"), 10, 50);
+        }
+        else {
+            g.drawString(("Min: " + findMinQLine(a, b, c)), 10, 50);
+        }
         canvas.getBufferStrategy().show();
         g.dispose();
     }
     public void drawQLine(Graphics2D g, float a, float b, float c){
-        for (float i = -50; i < 50; i+=0.1) {
-            for (float j = -50; j < 50; j+=0.1) {
-                if((int)(a*(i*i) + b*i + c) == (int)j){
-                    if (abs(roundTo(i)) < 0.5 || abs(roundTo(j)) < 0.5){
-                        g.setColor(Color.red);
-                    }
-                    else{
-                        g.setColor(Color.black);
-                    }
-                    g.fillRect((int) ((i*10)-500)*-1, (int) ((j*10)-375)*-1, 5, 5);
+        for (float i = (float) (-500/scale); i < 500/scale; i+=1/scale) {
+            for (float j = (float) (-500/scale); j < 500/scale; j+=1/scale) {
+                if((roundTo(a*((i+Mx)*(i+Mx)) + b*(i+Mx) + c, (int) log10(scale)) == roundTo((j+My), (int) log10(scale)))){
+                    g.fillRect((int) ((i*scale)-500)*-1, (int) ((j*scale)-375)*-1, (int) (40/scale)+1, (int) (40/scale)+1);
                 }
             }
         }
     }
     public double findMinQLine(float a, float b, float c){
+        if(a == 0 || a < 0){
+            return(-1000000);
+        }
         double search = 10;
         double place = 10;
         double small = 1000000000;
@@ -108,6 +120,12 @@ public class worldGraphically extends Frame implements KeyListener {
     }
     @Override
     public void keyTyped(KeyEvent e) {
+        if (Objects.equals(e.getKeyChar(), 'z')){
+            scale+= scale/10;
+        }
+        if (Objects.equals(e.getKeyChar(), 'x')){
+            scale-= scale/10;
+        }
         if(Objects.equals(e.getKeyChar(), 'a')){
             a -= 0.1;
         }
@@ -153,6 +171,47 @@ public class worldGraphically extends Frame implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
+
+    }
+
+    @Override
+    public void mouseClicked(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mousePressed(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseReleased(MouseEvent e) {
+        pmx = 10000;
+        pmy = 10000;
+    }
+
+    @Override
+    public void mouseEntered(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseExited(MouseEvent e) {
+
+    }
+
+    @Override
+    public void mouseDragged(MouseEvent e) {
+        if (pmx != 10000 || pmy != 10000) {
+            Mx -= (pmx - e.getX())/scale;
+            My -= (pmy - e.getY())/scale;
+        }
+        pmx = e.getX();
+        pmy = e.getY();
+    }
+
+    @Override
+    public void mouseMoved(MouseEvent e) {
 
     }
 }
