@@ -57,6 +57,11 @@ public class worldGraphically extends Frame implements KeyListener, MouseListene
         float i = Math.round(p*(pow(10, n)));
         return (float) (i/Math.pow(10, n));
     }
+    //the overriden method
+    private double roundTo(double p, int n){
+        double i = Math.round(p*(pow(10, n)));
+        return (i/Math.pow(10, n));
+    }
     public void render(){
         Graphics2D g = (Graphics2D) canvas.getBufferStrategy().getDrawGraphics().create();
         g.clearRect(0,0,width,height);
@@ -88,7 +93,8 @@ public class worldGraphically extends Frame implements KeyListener, MouseListene
             }
         }
     }
-    public double findMinQLine(float a, float b, float c){
+    // the method made static
+    static public double findMinQLine(float a, float b, float c){
         if(a == 0 || a < 0){
             return(-1000000);
         }
